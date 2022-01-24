@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 using Lab_Logger.Logger;
 
@@ -27,11 +28,13 @@ namespace Lab_Logger
             // 2.Log4Net을 이용한 LogFactory를 멤버로 가진 클래스 예외처리 테스트 
             CExamSession consoleLogTest = new CExamSession(null);
             consoleLogTest.ExceptionLog();
-            consoleLogTest.DebugLog("This is ConsoleLog Test...");
 
             CExamSession textLogTest = new CExamSession(new CTextLogFactory());
             textLogTest.InfoLog("This is TextLog Test...");
             textLogTest.ExceptionLog();
+
+            //Thread t1 = new Thread(() => consoleLogTest.DebugLog("This is ConsoleLog Test..."));
+            //t1.Start();
         }
     }
 }

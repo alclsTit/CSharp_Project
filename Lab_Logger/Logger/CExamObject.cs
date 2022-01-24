@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using log4net;
+using System.Threading;
 
 namespace Lab_Logger.Logger
 {
@@ -29,8 +30,12 @@ namespace Lab_Logger.Logger
 
         public void DebugLog(string message)
         {
-            if (mLogger.IsDebugEnabled)
+            while(true)
+            {
                 mLogger.Debug(message);
+
+                Thread.Sleep(1000);
+            }
         }
 
         public void InfoLog(string message)
@@ -47,7 +52,7 @@ namespace Lab_Logger.Logger
             }
             catch (Exception ex)
             {
-                mLogger.Error($"Exception in CExamSession.ExceptionLog - {ex.Message} - {ex.StackTrace}");
+                mLogger.Error($"Exception in CExamSession.ExceptionLog - {ex.Message} - {ex.StackTrace}", null);
             }
         }
     }
