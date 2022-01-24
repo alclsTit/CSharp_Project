@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab_Logger", "Lab_Logger\Lab_Logger.csproj", "{377F2194-7BC8-42C8-A362-DDB247F36D4B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab_Pooling", "Lab_Pooling\Lab_Pooling.csproj", "{FBDB2D91-C76D-4915-84CF-E2E3FD00F981}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{377F2194-7BC8-42C8-A362-DDB247F36D4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{377F2194-7BC8-42C8-A362-DDB247F36D4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{377F2194-7BC8-42C8-A362-DDB247F36D4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBDB2D91-C76D-4915-84CF-E2E3FD00F981}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBDB2D91-C76D-4915-84CF-E2E3FD00F981}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBDB2D91-C76D-4915-84CF-E2E3FD00F981}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBDB2D91-C76D-4915-84CF-E2E3FD00F981}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
