@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Collections.Concurrent;
 
 namespace Lab_Pooling.ObjectPooling
 {
@@ -16,10 +17,10 @@ namespace Lab_Pooling.ObjectPooling
     /// 4. lock-free
     /// </summary>
     /// <typeparam name="T">풀링할 객체인 T는 참조타입이면서 디폴트 생성자가 존재해야한다</typeparam>
-    public class CObjectPool<T> where T : IDisposable, new()
+    public class CObjectPoolConcurrent<T> where T : IDisposable, new()
     {
         private bool m_already_disposed = false;
-        private Queue<T> m_queue = new Queue<T>();
+        private ConcurrentQueue<T> m_queue = new ConcurrentQueue<T>();
         private Func<T> m_create_func;
         public int m_max_pooling_count;
         // Thread-Safe
@@ -31,7 +32,7 @@ namespace Lab_Pooling.ObjectPooling
 
         private object m_critical_lock = new object();
 
-        public CObjectPool(int pool_size, Func<T> create_func) 
+        public CObjectPoolConcurrent(int pool_size, Func<T> create_func)
         {
             this.Init(pool_size, create_func);
         }
@@ -53,7 +54,7 @@ namespace Lab_Pooling.ObjectPooling
         {
             this.Clear();
 
-            lock(m_critical_lock)
+            lock (m_critical_lock)
             {
                 Init(pool_size, create_func);
             }
@@ -63,10 +64,7 @@ namespace Lab_Pooling.ObjectPooling
         {
             if (this.TryPop(data))
             {
-                lock(m_critical_lock)
-                {
-                    m_queue.Enqueue(data);
-                }
+                m_queue.Enqueue(data);
             }
         }
 
@@ -87,21 +85,19 @@ namespace Lab_Pooling.ObjectPooling
             if (this.IsEmpty)
                 return new T();
 
-            T result;
-            lock(m_critical_lock)
-            {
-                result = m_queue.Peek();
-                m_queue.Dequeue();
-            }
-
-            return result;
+            m_queue.TryDequeue(out T element);
+            return element;
         }
 
         public void Clear()
         {
             lock(m_critical_lock)
             {
-                m_queue.Clear();
+                for(int i = 0; i < this.Count; ++i)
+                {
+                    m_queue.TryDequeue(out T element);
+                    element.Dispose();
+                }
             }
         }
 
@@ -120,11 +116,10 @@ namespace Lab_Pooling.ObjectPooling
             {
                 if (disposed)
                 {
-                    for(int i = 0; i < this.Count; ++i)
+                    for (int i = 0; i < this.Count; ++i)
                     {
-                        var target = m_queue.Peek();
-                        target.Dispose();
-                        m_queue.Dequeue();
+                        m_queue.TryDequeue(out T element);
+                        element.Dispose();
                     }
                 }
 

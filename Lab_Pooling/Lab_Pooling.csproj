@@ -43,7 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ObjectPooling\CHollowObject.cs" />
     <Compile Include="ObjectPooling\CObjectPool.cs" />
+    <Compile Include="ObjectPooling\CObjectPoolConcurrent.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
