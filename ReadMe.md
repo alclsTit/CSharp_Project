@@ -8,4 +8,4 @@
 ### 2. Object Pool
 * Thread safe
 * can use various object type
-* queue / lock (The best performance)
+* queue / lock, atomic (The best performance)
