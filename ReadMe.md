@@ -19,5 +19,5 @@
 
 ### 5. Serialize/Deserialize (Packet)
 * Performance Check
-1. BitConverter.GetBytes
-2. BitConverter.TryWriteBytes / ReadOnlySpan
+  * BitConverter.GetBytes
+  * BitConverter.TryWriteBytes / ReadOnlySpan
