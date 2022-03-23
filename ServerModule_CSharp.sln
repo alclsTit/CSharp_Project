@@ -11,7 +11,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab_ThreadManager", "Lab_Th
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab_SimpleServer", "Lab_SimpleServer\Lab_SimpleServer.csproj", "{1CA443A9-EA58-47A4-B38A-C929269C78E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab_PacketSerialize", "Lab_PacketSerialize\Lab_PacketSerialize.csproj", "{05AE3C0E-D31B-4B8E-8D8D-787E3B7DA8F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lab_PacketSerialize", "Lab_PacketSerialize\Lab_PacketSerialize.csproj", "{05AE3C0E-D31B-4B8E-8D8D-787E3B7DA8F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab_DB", "Lab_DB\Lab_DB.csproj", "{221C7592-F559-4674-BC97-581150AF2D2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{05AE3C0E-D31B-4B8E-8D8D-787E3B7DA8F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05AE3C0E-D31B-4B8E-8D8D-787E3B7DA8F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05AE3C0E-D31B-4B8E-8D8D-787E3B7DA8F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{221C7592-F559-4674-BC97-581150AF2D2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{221C7592-F559-4674-BC97-581150AF2D2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{221C7592-F559-4674-BC97-581150AF2D2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{221C7592-F559-4674-BC97-581150AF2D2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
