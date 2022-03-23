@@ -16,3 +16,8 @@
 
 ### 4. ThreadPool
 * Set ThreadPool' min/max number of thread
+
+### 5. Serialize/Deserialize (Packet)
+* Performance Check
+  * BitConverter.GetBytes
+  * BitConverter.TryWriteBytes / ReadOnlySpan
