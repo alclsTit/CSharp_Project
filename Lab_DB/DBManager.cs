@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data;
+﻿using System.Data;
 using System.Data.SqlClient;
 
 namespace Lab_DB
@@ -109,7 +104,6 @@ namespace Lab_DB
         {
             using(var command = new SqlCommand(spName, mConnection))
             {
-
                 command.CommandType = CommandType.StoredProcedure;
                 command.CommandTimeout = timeout;
 
@@ -166,7 +160,7 @@ namespace Lab_DB
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        protected int DoQueryTrans(string query, List<SqlParameter> items = null, int tiemout = 30)
+        protected int DoQueryTransaction(string query, List<SqlParameter> items = null, int tiemout = 30)
         {
             using(var tran = mConnection.BeginTransaction())
             {
@@ -193,16 +187,15 @@ namespace Lab_DB
                     }
                 }
             }
-
         }
 
         /// <summary>
-        /// 대량의 데이터 Insert 진행 시 사용
+        /// 대량의 데이터 Insert 진행 시 사용 (트랜잭션 사용)
         /// </summary>
         /// <param name="dt">데이터 테이블</param>
         /// <param name="tableName">테이블 이름</param>
         /// <param name="timeout">명령어 실행 제한시간</param>
-        protected void DoBulkInsert(DataTable dt, string tableName, int timeout = 30)
+        protected void DoBulkInsertTransaction(DataTable dt, string tableName, int timeout = 30)
         {
             using(var tran = mConnection.BeginTransaction())
             {
@@ -222,6 +215,25 @@ namespace Lab_DB
                         tran.Rollback();
                         throw;
                     }
+                }
+            }
+        }
+
+        protected DataTable ExcuteDatatable(string spName, int timeout = 30, params SqlParameter[] items)
+        {
+            using(var command = new SqlCommand(spName, mConnection))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandTimeout = timeout;
+                using (var adapter = new SqlDataAdapter(command))
+                {
+                    if (items != null)
+                        adapter.SelectCommand.Parameters.AddRange(items);
+
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+
+                    return dt;
                 }
             }
         }
@@ -255,8 +267,7 @@ namespace Lab_DB
 
             try
             {
-                if (!IsOpen) 
-                    dbOpenState = Connect();
+                dbOpenState = IsOpen == true ? true : Connect();
 
                 if (dbOpenState)
                     affected = DoQuerySP(spName, items, timeout);
@@ -285,8 +296,7 @@ namespace Lab_DB
 
             try
             {
-                if (!IsOpen)
-                    dbOpenState = Connect();
+                dbOpenState = IsOpen == true ? true : Connect();
 
                 if (dbOpenState)
                     affected = DoQuerySP(spName, items, returnValue, timeout);
@@ -316,9 +326,8 @@ namespace Lab_DB
 
             try
             {
-                if (!IsOpen)
-                    dbOpenState = Connect();
-
+                dbOpenState = IsOpen == true ? true : Connect();
+                
                 if (dbOpenState)
                     affected = DoQuerySP(spName, out resultTable, items, returnValue, timeout);
             }
@@ -348,8 +357,7 @@ namespace Lab_DB
 
             try
             {
-                if (!IsOpen)
-                    dbOpenState = Connect();
+                dbOpenState = IsOpen == true ? true : Connect();
 
                 if (dbOpenState)
                     affected = DoQuery(query, items);
@@ -371,6 +379,37 @@ namespace Lab_DB
             return dbOpenState;
         }
         #endregion
+
+
+        public bool TryExcuteDatatable(string spName, out DataTable resultTable, int timeout = 30, params SqlParameter[] items)
+        {
+            bool dbOpenState = false;
+            resultTable = null;
+
+            try
+            {
+                if (!IsOpen)
+                    dbOpenState = Connect();
+
+                if (dbOpenState)
+                    resultTable = ExcuteDatatable(spName, timeout, items);
+            }
+            catch (SqlException sqlEx)
+            {
+                Console.WriteLine($"Exception in DBFrame.TryExcuteDatatable - {sqlEx.Message} - {sqlEx.StackTrace}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in DBFrame.TryExcuteDatatable - {ex.Message} - {ex.StackTrace}");
+            }
+            finally
+            {
+                if (dbOpenState)
+                    Close();
+            }
+
+            return dbOpenState;
+        }
     }
 
     public class DBManager
@@ -380,8 +419,6 @@ namespace Lab_DB
         private static readonly DBManager mInstance = new DBManager();
         public static DBManager Instance => mInstance;
         private DBManager() { }
-
-        bool isConnected = false;
 
         public void Initialize(string name, string ip, string port)
         {
@@ -427,6 +464,17 @@ namespace Lab_DB
             }
 
             return mDBFrame.TryDoQuerySP(spName, out affected, out resultTable, items, returnValue, timeout);
+        }
+
+        public bool TryExcuteDatatable(string spName, out DataTable resultTable, int timeout = 30, params SqlParameter[] items)
+        {
+            if (mDBFrame == null)
+            {
+                resultTable = null;
+                return false;
+            }
+
+            return mDBFrame.TryExcuteDatatable(spName, out resultTable, timeout, items);
         }
     }
 }
