@@ -21,3 +21,10 @@
 * Performance Check
   * BitConverter.GetBytes
   * BitConverter.TryWriteBytes / ReadOnlySpan
+
+### 6. DB
+* DB Module
+  * Single query (DML)
+  * Stored procedure
+  * Bulk insert
+  * Transaction
