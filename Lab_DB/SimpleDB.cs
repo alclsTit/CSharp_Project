@@ -444,7 +444,6 @@ namespace Lab_DB
         {
             try
             {
-                ++mTmpExCount;
                 using(var connection = dbOpenSync(type))
                 {
                     using (var command = new SqlCommand(query, connection))
@@ -466,9 +465,6 @@ namespace Lab_DB
 
                         try
                         {
-                            if (mTmpExCount % 2 == 1)
-                                throw new Exception("Text");
-
                             using (var adapter = new SqlDataAdapter(command))
                             {
                                 DataTable dt = new DataTable();
@@ -480,14 +476,8 @@ namespace Lab_DB
                                 return new Tuple<bool, DataTable>(true, dt);
                             }
                         }
-                        catch (SqlException)
-                        {
-                            throw;
-                        }
-                        catch (Exception)
-                        {
-                            throw;
-                        }
+                        catch (SqlException){throw;}
+                        catch (Exception){throw;}
                         finally
                         {
                             if (command.Parameters.Count > 0)
@@ -1068,16 +1058,27 @@ namespace Lab_DB
                             command.Parameters.Add(outValue);
                         }
 
-                        using (var adapter = new SqlDataAdapter(command))
+                        try
                         {
-                            DataTable dt = new DataTable();
-                            adapter.Fill(dt);
+                            using (var adapter = new SqlDataAdapter(command))
+                            {
+                                DataTable dt = new DataTable();
+                                adapter.Fill(dt);
 
-                            await command.PrepareAsync();
-                            await command.ExecuteNonQueryAsync();
+                                await command.PrepareAsync();
+                                await command.ExecuteNonQueryAsync();
 
-                            command.Parameters.Clear();
-                            return new Tuple<bool, DataTable>(true, dt);
+                                return new Tuple<bool, DataTable>(true, dt);
+                            }
+                        }
+                        catch (SqlException) { throw; }
+                        catch (Exception) { throw; }
+                        finally
+                        {
+                            // 해당 작업을 하지 않을 경우 같은 Parameters Collection 내용을 중복사용하게 되면 익셉션이 발생한다
+                            // SqlCommand의 Parameters Collection 내용을 Dispose 되기전에 미리 삭제하고 해당 객체를 폐기해야한다
+                            if (command.Parameters.Count > 0)
+                                command.Parameters.Clear();
                         }
                     }
                 }
@@ -1697,13 +1698,23 @@ namespace Lab_DB
                             command.Parameters.Add(outValue);
                         }
 
-                        using (var adapter = new SqlDataAdapter(command))
+                        try
                         {
-                            DataTable dt = new DataTable();
-                            adapter.Fill(dt);
+                            using (var adapter = new SqlDataAdapter(command))
+                            {
+                                DataTable dt = new DataTable();
+                                adapter.Fill(dt);
 
-                            await command.ExecuteNonQueryAsync();
-                            return new Tuple<bool, DataTable>(true, dt);
+                                await command.ExecuteNonQueryAsync();
+                                return new Tuple<bool, DataTable>(true, dt);
+                            }
+                        }
+                        catch (SqlException) { throw; }
+                        catch (Exception) { throw; }
+                        finally
+                        {
+                            if (command.Parameters.Count > 0)
+                                command.Parameters.Clear();
                         }
                     }
                 }

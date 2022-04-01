@@ -12,6 +12,123 @@ namespace Lab_DB
 { 
     internal static class DBPerformanceCheck
     {
+        public static async Task RunTest(int clientCount, int dbCallTime)
+        {
+            var sw = new Stopwatch();
+
+            Console.WriteLine($"Testing {clientCount} clients operated!!!");
+
+            var onOff = 1;
+
+            switch (onOff)
+            {
+                case 0:
+                    sw.Restart();
+                    {
+                        Task.WaitAll(
+                            Enumerable.Range(0, clientCount).AsParallel().Select(item => Task.Run(() => ExecuteSyncTest(item, dbCallTime))).ToArray());
+
+                        Console.WriteLine($"-> ExecuteSyncTest returned in {sw.Elapsed}");
+                    }
+
+                    sw.Restart();
+                    {
+                        Task.WaitAll(
+                            Enumerable.Range(0, clientCount).AsParallel().Select(_ => ExecuteAsyncTest(dbCallTime)).ToArray());
+
+                        Console.WriteLine($"-> ExecuteAsyncTest returned in {sw.Elapsed}");
+                    }
+                    break;
+
+                case 1:
+                    sw.Restart();
+                    {
+                        var aTasks = Enumerable.Range(0, clientCount).Select(_ => ExecuteWrapperASync());
+                        await Task.WhenAll(aTasks);
+                        Console.WriteLine($"-> ExecuteWrapperAsync returned in {sw.Elapsed}");
+                    }
+
+                    sw.Restart();
+                    {
+                        var aTasks = Enumerable.Range(0, clientCount).Select(_ => ExecuteAsync());
+                        await Task.WhenAll(aTasks);
+                        int count = 0;
+                        foreach(var item in aTasks.ToList())
+                        {
+                            ++count;
+                            if (item.IsCompletedSuccessfully)
+                                Console.WriteLine($"{item.Result}");
+                        }
+                        Console.WriteLine($"-> ExecuteNativeAsync returned in {sw.Elapsed} // Jobs = {count}");
+                    }
+
+                    sw.Restart();
+                    {
+                        var aTasks = Enumerable.Range(0, clientCount).Select(_ => ExecuteSPAsync());
+                        await Task.WhenAll(aTasks);
+                        Console.WriteLine($"-> ExecuteNativeStoredProcedureAsync returned in {sw.Elapsed}");
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            Console.WriteLine("\n\n");
+        }
+
+        private static void ExecuteSyncTest(int num, int dbCallTime)
+        {
+            //Console.WriteLine($"[{num}] This is Thread num = {Thread.CurrentThread.ManagedThreadId}");
+            Thread.Sleep(dbCallTime);
+            //Console.WriteLine($"[{num}] This is Thread num = {Thread.CurrentThread.ManagedThreadId}");
+        }
+
+        private static async Task ExecuteAsyncTest(int dbCallTime)
+        {
+            await Task.Delay(dbCallTime);
+        }
+
+        private static Task<bool> ExecuteWrapperASync()
+        {
+            var query = "SELECT * FROM dbo.tbl_dummy WHERE name = @name";
+            SqlParameter myParam = new SqlParameter("@name", SqlDbType.NVarChar, 10);
+            myParam.Value = "sudo9";
+
+            var myParams = new List<SqlParameter>(1);
+            myParams.Add(myParam);
+
+            return Task.Run(() =>
+            {
+                var result = SimpleDB.ExecuteQueryReal(eDBType.LAB_GAME01, query, myParams);
+                return result.Item1;
+            });
+        }
+
+        private static async Task<bool> ExecuteAsync()
+        {
+            var query = "SELECT * FROM dbo.tbl_dummy WHERE name = @name";
+            SqlParameter myParam = new SqlParameter("@name", SqlDbType.NVarChar, 10);
+            myParam.Value = "sudo9";
+
+            var myParams = new List<SqlParameter>(1);
+            myParams.Add(myParam);
+
+            var result = await SimpleDB.ExecuteQueryReturnAsyncReal(eDBType.LAB_GAME01, query, myParams);
+            return result.Item1;
+        }
+
+        private static async Task<bool> ExecuteSPAsync()
+        {
+            SqlParameter myParam = new SqlParameter("@name", SqlDbType.NVarChar, 10);
+            myParam.Value = "sudo9";
+
+            var myParams = new List<SqlParameter>(1);
+            myParams.Add(myParam);
+
+            var result = await SimpleDB.ExecuteSPReturnAsyncReal(eDBType.LAB_GAME01, "osp_dummy_select", myParams);
+            return result.Item1;
+        }
+
         private static void PerformanceLoop(int count)
         {
             var query = "SELECT * FROM dbo.tbl_dummy WHERE name = @name";
@@ -22,14 +139,17 @@ namespace Lab_DB
             myParams.Add(myParam);
 
             var totalCount = count;
-            for (var idx = 0; idx < count; ++idx)
+            while(totalCount > 0)
             {
                 try
                 {
                     var result = SimpleDB.ExecuteQueryReal(eDBType.LAB_GAME01, query, myParams);
-                    //if (!result.Item1)
-                    //    break;
+                    if (!result.Item1)
+                        break;
                     --totalCount;
+
+                    if (totalCount % 1000 == 0)
+                        Console.WriteLine($"Left Count = {totalCount}");
                 }
                 catch (Exception ex)
                 {
@@ -60,11 +180,11 @@ namespace Lab_DB
             myParams.Add(myParam);
 
             var totalCount = count;
-            while(true)
+            while(totalCount > 0)
             {
                 var result = await SimpleDB.ExecuteQueryReturnAsyncReal(eDBType.LAB_GAME01, query, myParams);
-                if (!result.Item1)
-                    break;
+                //if (!result.Item1)
+                //    break;
                 --totalCount;
             }
 
@@ -79,6 +199,35 @@ namespace Lab_DB
             checker.Stop();
             Console.WriteLine($"TimeElasped: {checker.Elapsed.TotalSeconds}");        
         }
+
+        private static async Task PerformanceLoopSPAsync(int count)
+        {
+            SqlParameter myParam = new SqlParameter("@name", SqlDbType.NVarChar, 10);
+            myParam.Value = "sudo9";
+
+            var myParams = new List<SqlParameter>(1);
+            myParams.Add(myParam);
+
+            var totalCount = count;
+            while (totalCount > 0)
+            {
+                var result = await SimpleDB.ExecuteSPReturnAsyncReal(eDBType.LAB_GAME01, "osp_dummy_select", myParams);
+                //if (!result.Item1)
+                //    break;
+                --totalCount;
+            }
+
+            Console.WriteLine($"Job Completed[async] = {totalCount}/{count}");
+        }
+
+        public static async Task PerformanceCheckSPAsync(int loopCount)
+        {
+            var checker = new Stopwatch();
+            checker.Start();
+            await PerformanceLoopSPAsync(loopCount);
+            checker.Stop();
+            Console.WriteLine($"TimeElasped: {checker.Elapsed.TotalSeconds}");
+        }
     }
 
 
@@ -91,13 +240,21 @@ namespace Lab_DB
 
             SimpleDB.Initialize(DBConfigList.Instance.mDBConfigMap);
 
-            DBPerformanceCheck.PerformanceCheck(10000);
+            var input = 1000;
+            var dbCallTime = 1000;
+            await DBPerformanceCheck.RunTest(input, dbCallTime);
+
+            /*DBPerformanceCheck.PerformanceCheck(input);
 
             Console.WriteLine("-----------------------------------------------\n\n\n");
 
-            await DBPerformanceCheck.PerformanceCheckAsync(10000);
+            await DBPerformanceCheck.PerformanceCheckAsync(input);
 
-            /*SqlParameter param = new SqlParameter("@name", SqlDbType.NVarChar, 10);
+            Console.WriteLine("-----------------------------------------------\n\n\n");
+
+            await DBPerformanceCheck.PerformanceCheckSPAsync(input);
+
+            SqlParameter param = new SqlParameter("@name", SqlDbType.NVarChar, 10);
             param.Value = "sudo3";
        
 
