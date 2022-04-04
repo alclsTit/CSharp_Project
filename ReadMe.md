@@ -30,9 +30,9 @@
   * Transaction
 
 ### 7. Design Pattern
-1. Behavioral Pattern
+* Behavioral Pattern
   * State
-2. Creational Pattern
+* Creational Pattern
   * Sigleton
-3. Structural Pattern
+* Structural Pattern
   
