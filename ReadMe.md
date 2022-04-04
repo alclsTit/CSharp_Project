@@ -33,6 +33,6 @@
 * Behavioral Pattern
   * State
 * Creational Pattern
-  * Sigleton
+  * Singleton
 * Structural Pattern
   
