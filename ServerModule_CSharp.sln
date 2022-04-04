@@ -13,7 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab_SimpleServer", "Lab_Sim
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lab_PacketSerialize", "Lab_PacketSerialize\Lab_PacketSerialize.csproj", "{05AE3C0E-D31B-4B8E-8D8D-787E3B7DA8F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab_DB", "Lab_DB\Lab_DB.csproj", "{221C7592-F559-4674-BC97-581150AF2D2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lab_DB", "Lab_DB\Lab_DB.csproj", "{221C7592-F559-4674-BC97-581150AF2D2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab_Design", "Lab_Design\Lab_Design.csproj", "{91251FFD-692B-44E8-9630-6544C39A8108}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{221C7592-F559-4674-BC97-581150AF2D2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{221C7592-F559-4674-BC97-581150AF2D2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{221C7592-F559-4674-BC97-581150AF2D2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91251FFD-692B-44E8-9630-6544C39A8108}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91251FFD-692B-44E8-9630-6544C39A8108}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91251FFD-692B-44E8-9630-6544C39A8108}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91251FFD-692B-44E8-9630-6544C39A8108}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
