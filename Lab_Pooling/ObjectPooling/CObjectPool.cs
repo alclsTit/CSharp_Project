@@ -19,33 +19,40 @@ namespace Lab_Pooling.ObjectPooling
     public class CObjectPool<T> where T : IDisposable, new()
     {
         private bool m_already_disposed = false;
-        private Queue<T> m_queue = new Queue<T>();
-        private Func<T> m_create_func;
         public int m_max_pooling_count;
+        private Queue<T> m_queue;
+        private Func<T> m_create_func;
+        private object m_critical_lock = new object();
+
+        #region "Property"
         // Thread-Safe
         public int Count => m_queue.Count;
         // Thread-Safe
         public bool IsQueueCountMax => this.Count == m_max_pooling_count;
         // Thread-Safe
         public bool IsEmpty => this.Count <= 0;
-
-        private object m_critical_lock = new object();
+        #endregion
 
         public CObjectPool(int pool_size, Func<T> create_func) 
         {
-            this.Init(pool_size, create_func);
+            m_max_pooling_count = pool_size;
+            m_queue = new Queue<T>(pool_size);
+            this.Initialize(create_func);
         }
 
-        private void Init(int pool_size, Func<T> create_func)
+        ~CObjectPool()
         {
-            m_max_pooling_count = pool_size;
+            Dispose(false);
+        }
 
+        private void Initialize(Func<T> create_func)
+        {
             if (create_func == null)
                 m_create_func = () => { return new T(); };
             else
                 m_create_func = create_func;
 
-            for (int i = 0; i < pool_size; ++i)
+            for (int i = 0; i < m_max_pooling_count; ++i)
                 m_queue.Enqueue(m_create_func());
         }
 
@@ -55,18 +62,21 @@ namespace Lab_Pooling.ObjectPooling
 
             lock(m_critical_lock)
             {
-                Init(pool_size, create_func);
+                m_max_pooling_count = pool_size;
+                m_queue = new Queue<T>(pool_size);
+
+                Initialize(create_func);
             }
         }
 
         public void Push(T data)
         {
-            if (this.TryPop(data))
+            lock(m_critical_lock)
             {
-                lock(m_critical_lock)
-                {
-                    m_queue.Enqueue(data);
-                }
+                if (!TryPop(data))
+                    data?.Dispose();
+
+                m_queue.Enqueue(data);
             }
         }
 
@@ -81,20 +91,15 @@ namespace Lab_Pooling.ObjectPooling
             return true;
         }
 
-
         public T Pop()
         {
-            if (this.IsEmpty)
-                return new T();
-
-            T result;
             lock(m_critical_lock)
             {
-                result = m_queue.Peek();
-                m_queue.Dequeue();
-            }
+                if (!IsEmpty)
+                    return m_queue.Dequeue();
 
-            return result;
+                return m_create_func();
+            }
         }
 
         public void Clear()
@@ -102,6 +107,7 @@ namespace Lab_Pooling.ObjectPooling
             lock(m_critical_lock)
             {
                 m_queue.Clear();
+                m_queue = null;
             }
         }
 
@@ -116,19 +122,22 @@ namespace Lab_Pooling.ObjectPooling
 
         protected virtual void Dispose(bool disposed)
         {
-            if (!m_already_disposed)
+            lock(m_critical_lock)
             {
-                if (disposed)
+                if (!m_already_disposed)
                 {
-                    for(int i = 0; i < this.Count; ++i)
+                    if (disposed)
                     {
-                        var target = m_queue.Peek();
-                        target.Dispose();
-                        m_queue.Dequeue();
+                        // 관리리소스 해제
+                        while(m_queue.Count > 0)
+                        {
+                            var target = m_queue.Dequeue();
+                            target.Dispose();
+                        }
                     }
-                }
 
-                m_already_disposed = true;
+                    m_already_disposed = true;
+                }
             }
         }
 
