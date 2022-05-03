@@ -28,3 +28,11 @@
   * Stored procedure
   * Bulk insert
   * Transaction
+
+### 7. Design Pattern
+* Behavioral Pattern
+  * State
+* Creational Pattern
+  * Singleton
+* Structural Pattern
+  
