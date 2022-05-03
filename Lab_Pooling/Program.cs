@@ -5,12 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
+using Microsoft.Extensions.ObjectPool;
+using System.Net.Sockets;
 
 using Lab_Pooling.ObjectPooling;
 
 namespace Lab_Pooling
 {
-
     public class CPerformanceChecker
     {
         private Stopwatch m_stopwatch = new Stopwatch();
@@ -126,7 +127,27 @@ namespace Lab_Pooling
                     localQ.Dequeue();
             }, loopCount, pfCheckCount);
             Console.WriteLine($"3.[Normal Allocator]  - {loopCount} logicloop // {pfCheckCount} operated // {pfCheckResultTime} seconds");
-       }
+
+            // 4. Microsoft.Net.ObjectPool
+            // Microsoft.Extensions.ObjectPool의 ObjectPool은 추상클래스
+            // 하지만, Microsoft는 개체에 대한 생성자 이외에 작업은 모두 구현해둔 상태. 이를 DefaultObjectPool<T>로 사용할 수 있다
+            SomethingObject mySomethingObject = new SomethingObject();
+            IPooledObjectPolicy<SocketAsyncEventArgs> policy = new SocketAsyncEventArgsPoolPolicy(mySomethingObject.OnSomethingHandler);
+            DefaultObjectPool<SocketAsyncEventArgs> MSObjectPool = new DefaultObjectPool<SocketAsyncEventArgs>(policy, loopCount);
+            pfCheck.Restart();
+            pfCheckResultTime = pfCheck.GetWorkOperationTimeDiffSeconds<int>((objCount) =>
+            {
+                while (objCount > 0)
+                {
+                    var target = MSObjectPool.Get();
+                    MSObjectPool.Return(target);
+                    --objCount;
+                }
+
+            }, loopCount, pfCheckCount);
+            Console.WriteLine($"4.[Microsoft.Net.ObjectPool]  - {loopCount} logicloop // {pfCheckCount} operated // {pfCheckResultTime} seconds");
+
+        }
     }
 }
 

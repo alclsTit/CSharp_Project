@@ -14,7 +14,7 @@ namespace Lab_Pooling.ObjectPooling
         public UInt64 m_serial { get; private set; }
 
         public CHollowObject() : this("DefaultName") { }
-
+         
         public CHollowObject(string name)
         {
             ++ms_total_num;
@@ -45,6 +45,5 @@ namespace Lab_Pooling.ObjectPooling
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
     }
 }
