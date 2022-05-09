@@ -50,6 +50,18 @@ namespace Lab_PacketSerialize
 
             Console.WriteLine($"[GetBytes Performance] = [{input}] count / [{sw.Elapsed.TotalSeconds}] sec");
 
+            DummyPacketFlatSharp packetFlatSharp = new DummyPacketFlatSharp();
+            packetFlatSharp.logdate = packet.logdate;
+
+            sw.Start();
+            for(var idx = 0; idx < inputInt; ++idx)
+            {
+                var resultBuffer = PacketParserFlatSharp.Instance.MessageToBuffer(packetFlatSharp);
+                var resultPacket = PacketParserFlatSharp.Instance.BufferToMessage<DummyPacketFlatSharp>(new ArraySegment<byte>(resultBuffer.ToArray()));
+            }
+            sw.Stop();
+
+            Console.WriteLine($"[FlatSharp Performance] = [{input}] count / [{sw.Elapsed.TotalSeconds}] sec");
         }
     }
 }

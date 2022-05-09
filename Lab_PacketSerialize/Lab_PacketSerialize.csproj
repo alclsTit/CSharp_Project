@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,10 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Message\" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="FlatSharp" Version="6.3.1" />
+    <PackageReference Include="FlatSharp.Runtime" Version="6.3.1" />
     <PackageReference Include="protobuf-net" Version="3.0.101" />
   </ItemGroup>
 
