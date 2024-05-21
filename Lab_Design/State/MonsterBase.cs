@@ -6,6 +6,30 @@ using System.Threading.Tasks;
 
 namespace Lab_Design.State
 {
+    class TmpClass<TClass> where TClass : new()
+    {
+        TClass tmpObject;
+
+        public TmpClass()
+        {
+            Console.WriteLine($"Object is Created !!! - {typeof(TClass).Name}");
+            tmpObject = new TClass();
+        }
+    }
+
+    struct TmpDataStruct
+    {
+        public TmpDataStruct() { Console.WriteLine("No Param"); }
+        public TmpDataStruct(int m) { Console.WriteLine($"{m} Constructor"); }
+    }
+
+    class TmpDataClass
+    {
+        public string mName { get; set; }
+        public TmpDataClass() { }
+    }
+
+
     public enum eMonsterState
     {
         NoInitialized = 0,

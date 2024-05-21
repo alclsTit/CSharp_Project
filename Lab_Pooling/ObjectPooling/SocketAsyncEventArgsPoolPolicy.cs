@@ -31,6 +31,8 @@ namespace Lab_Pooling.ObjectPooling
         {
             SocketAsyncEventArgs newObject = new SocketAsyncEventArgs();
             newObject.Completed += new EventHandler<SocketAsyncEventArgs>(mDelegate);
+            newObject.SetBuffer(new byte[1024], 0, 1024);
+            newObject.UserToken = new CHollowObject();
             return newObject;
         }
 

@@ -36,7 +36,7 @@ namespace Lab_PacketSerialize
             }
             sw.Stop();
 
-            Console.WriteLine($"[TryWriteBytes Performance] = [{input}] count / [{sw.Elapsed.TotalSeconds}] sec");
+            Console.WriteLine($"[GoogleProtobuf, TryWriteBytes Performance] = [{input}] count / [{sw.Elapsed.TotalSeconds}] sec");
 
 
             sw.Start();
@@ -48,7 +48,7 @@ namespace Lab_PacketSerialize
             }
             sw.Stop();
 
-            Console.WriteLine($"[GetBytes Performance] = [{input}] count / [{sw.Elapsed.TotalSeconds}] sec");
+            Console.WriteLine($"[GoogleProtobuf, GetBytes Performance] = [{input}] count / [{sw.Elapsed.TotalSeconds}] sec");
 
             DummyPacketFlatSharp packetFlatSharp = new DummyPacketFlatSharp();
             packetFlatSharp.logdate = packet.logdate;

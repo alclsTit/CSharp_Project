@@ -1675,7 +1675,7 @@ namespace Lab_DB
             return new Tuple<bool, DataTable>(false, null);
         }
 
-        public static async Task<Tuple<bool, DataTable>> ExecuteSPReturnAsyncReal(eDBType type, string spName, IEnumerable<SqlParameter> parameters = null, SqlParameter outValue = null, int timeout = 30)
+        public static async Task<sDBResult> ExecuteSPReturnAsyncReal(eDBType type, string spName, IEnumerable<SqlParameter> parameters = null, SqlParameter outValue = null, int timeout = 30)
         {
             try
             {
@@ -1706,7 +1706,9 @@ namespace Lab_DB
                                 adapter.Fill(dt);
 
                                 await command.ExecuteNonQueryAsync();
-                                return new Tuple<bool, DataTable>(true, dt);
+
+                                Console.WriteLine($"Output = {command.Parameters[outValue.ParameterName].Value}");
+                                return outValue == null ? new sDBResult(true, dt) : new sDBResult(true, dt, (int)command.Parameters[outValue.ParameterName].Value);
                             }
                         }
                         catch (SqlException) { throw; }
@@ -1728,7 +1730,56 @@ namespace Lab_DB
                 Console.WriteLine($"Exception in SimpleDB.ExecuteStoredProcedureAsync - {ex.Message} - {ex.StackTrace}");
             }
 
-            return new Tuple<bool, DataTable>(false, null);
+            return new sDBResult(false, null, 0);
+        }
+        #endregion
+
+        #region "Bulk Insert"
+        /// <summary>
+        /// 대량의 데이터 Insert 진행 시 사용 (트랜잭션 사용)
+        /// </summary>
+        /// <param name="dt">데이터 테이블</param>
+        /// <param name="tableName">테이블 이름</param>
+        /// <param name="timeout">명령어 실행 제한시간</param>
+        public static async Task DoBulkInsertTransaction(eDBType type, DataTable dataTable, string tableName, int timeout = 30)
+        {
+            try
+            {
+                using(var connection = await dbOpenAsync(type))
+                {
+                    using (var tran = connection.BeginTransaction())
+                    {
+                        bool result = false;
+                        using (var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.CheckConstraints | SqlBulkCopyOptions.FireTriggers, tran))
+                        {
+                            try
+                            {
+                                bulkCopy.DestinationTableName = tableName;
+        
+                                await bulkCopy.WriteToServerAsync(dataTable);
+
+                                tran.Commit();
+                                result = true;
+                            }
+                            catch (SqlException) { throw; }
+                            catch (Exception) { throw; }
+                            finally
+                            {
+                                if (!result)
+                                    tran.Rollback();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                Console.WriteLine($"Exception in SimpleDB.DoBulkInsertTransaction - {sqlEx.Message} - {sqlEx.StackTrace}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in SimpleDB.DoBulkInsertTransaction - {ex.Message} - {ex.StackTrace}");
+            }
         }
         #endregion
     }

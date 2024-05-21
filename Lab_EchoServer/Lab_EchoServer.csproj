@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0-preview.4.22251.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lab_EchoServerEngine\Lab_EchoServerEngine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Lab_SimpleEchoServer">
+      <HintPath>..\Lab_SimpleEchoServer\bin\Debug\net6.0\Lab_SimpleEchoServer.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

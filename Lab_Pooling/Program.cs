@@ -79,7 +79,7 @@ namespace Lab_Pooling
 
         static void Main(string[] args)
         {
-            var loopCount = 1000000;
+            /*var loopCount = 1000;
             var pfCheckCount = 10;
             var startTime = DateTime.Now;
             double pfCheckResultTime = 0.0;
@@ -87,7 +87,7 @@ namespace Lab_Pooling
             CPerformanceChecker pfCheck = new CPerformanceChecker();
 
             // 1. Object Pool (queue / lock)
-            CObjectPool<CHollowObject> myObjectPool = new CObjectPool<CHollowObject>(loopCount, () => { return new CHollowObject(); });  
+            CObjectPool<CHollowObject> myObjectPool = new CObjectPool<CHollowObject>(loopCount, () => { return new CHollowObject(); });
             pfCheck.Restart();
             pfCheckResultTime = pfCheck.GetWorkOperationTimeDiffSeconds<int>((objCount) =>
             {
@@ -146,6 +146,78 @@ namespace Lab_Pooling
 
             }, loopCount, pfCheckCount);
             Console.WriteLine($"4.[Microsoft.Net.ObjectPool]  - {loopCount} logicloop // {pfCheckCount} operated // {pfCheckResultTime} seconds");
+            */
+
+            /*SomethingObject mySomethingObject = new SomethingObject();
+            List<SocketAsyncEventArgs> eventObjList = new List<SocketAsyncEventArgs>(11);
+            IPooledObjectPolicy<SocketAsyncEventArgs> policy2 = new SocketAsyncEventArgsPoolPolicy(mySomethingObject.OnSomethingHandler);
+            DefaultObjectPool<SocketAsyncEventArgs> MSObjectPool2 = new DefaultObjectPool<SocketAsyncEventArgs>(policy2, 2);
+            for (int i = 0; i < 3; ++i)
+                eventObjList.Add(MSObjectPool2.Get());
+
+            eventObjList.ForEach((item) => MSObjectPool2.Return(item));
+            eventObjList.Clear();
+
+            for (int i = 0; i < 3; ++i)
+                eventObjList.Add(MSObjectPool2.Get());
+            // 9개까지는 SocketAsyncEventArgsPoolPolicy.Create 호출이 없다가
+            // 10개에서 SocketAsyncEventArgsPoolPolicy.Create 호출을 통해서 객체를 생성함
+
+            MSObjectPool2.Return(eventObjList[0]);
+            MSObjectPool2.Return(eventObjList[1]);
+            MSObjectPool2.Return(eventObjList[2]); //풀이 아닌 일반 new 할당연산자를 이용하여 객체 생성(gc 수집대상)
+
+            var eObj1 = MSObjectPool2.Get();
+            var eObj2 = MSObjectPool2.Get();
+            var eObj3 = MSObjectPool2.Get(); //풀에 반환되지 않음
+            */
+
+            SomethingObject mySomethingObject = new SomethingObject();
+            IPooledObjectPolicy<SocketAsyncEventArgs> policy3 = new SocketAsyncEventArgsPoolPolicy(mySomethingObject.OnSomethingHandler);
+
+            var provider = new DefaultObjectPoolProvider();
+            provider.MaximumRetained = 2;
+
+            ObjectPool<SocketAsyncEventArgs> pool = provider.Create(policy3);
+            {
+                var eventObj1 = pool.Get();
+                var eventObj2 = pool.Get();
+                var eventObj3 = pool.Get();
+
+                var eventObj1_target = eventObj1.UserToken as CHollowObject;
+                eventObj1_target?.ShowMyInfo();
+
+                var eventObj2_target = eventObj2.UserToken as CHollowObject;
+                eventObj2_target?.ShowMyInfo();
+
+                var eventObj3_target = eventObj3.UserToken as CHollowObject;
+                eventObj3_target?.ShowMyInfo();
+
+                pool.Return(eventObj1);
+                pool.Return(eventObj2);
+                pool.Return(eventObj3);
+
+                eventObj1_target = eventObj1.UserToken as CHollowObject;
+                eventObj1_target?.ShowMyInfo();
+
+                eventObj2_target = eventObj2.UserToken as CHollowObject;
+                eventObj2_target?.ShowMyInfo();
+
+                eventObj3_target = eventObj3.UserToken as CHollowObject;
+                eventObj3_target?.ShowMyInfo();
+
+                (pool as IDisposable).Dispose();
+
+                eventObj1_target = eventObj1.UserToken as CHollowObject;
+                eventObj1_target?.ShowMyInfo();
+
+                eventObj2_target = eventObj2.UserToken as CHollowObject;
+                eventObj2_target?.ShowMyInfo();
+
+                eventObj3_target = eventObj3.UserToken as CHollowObject;
+                eventObj3_target?.ShowMyInfo();
+            }
+           
 
         }
     }

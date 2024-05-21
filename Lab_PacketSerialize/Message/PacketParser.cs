@@ -7,10 +7,12 @@ using ProtoBuf;
 
 namespace Lab_PacketSerialize.Message
 {
-    [ProtoContract]
+    // 패킷 사이즈를 개발자가 직접 컨트롤 할 수 없다. 같은 타입이여도 값에 따라 직렬화된 크기가 다를 수 있다
+    // ProtoBuf 내부적으로 variable integer 인코딩 진행, 지그재그인코딩으로 최적화
+    [ProtoContract] // 직렬화 대상 클래스임을 알리는 애트리뷰트
     public class DummyPacket : Packet
     {
-        [ProtoMember(3)]
+        [ProtoMember(3)]    // 직렬화 대상 멤버임을 알리는 애트리뷰트, number는 선언된 순서
         public string logdate;
 
         public DummyPacket() : base(1) { }

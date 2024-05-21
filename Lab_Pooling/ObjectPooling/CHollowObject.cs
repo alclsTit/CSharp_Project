@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net.Sockets;
 
 namespace Lab_Pooling.ObjectPooling
 {
     public class CHollowObject : IDisposable
     {
         private bool m_already_disposed = false;
-        private UInt64 ms_total_num = 0;
+        private static UInt64 ms_total_num = 0;
         public string m_name { get; private set; }
         public UInt64 m_serial { get; private set; }
 

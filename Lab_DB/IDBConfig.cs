@@ -7,6 +7,20 @@ using System.Data.SqlClient;
 
 namespace Lab_DB
 {
+    public struct sDBResult
+    {
+        public bool success { get; private set; } = false;
+        public System.Data.DataTable selectTable { get; private set; } = null;
+        public int output { get; private set; } = 0;
+
+        public sDBResult(bool flag = false, System.Data.DataTable table = null, int output = 0)
+        {
+            success = flag;
+            selectTable = table;
+            this.output = output;
+        }
+    }
+
     public enum eDBType
     {
         _MIN_NO_TYPE = 0,

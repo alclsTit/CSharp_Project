@@ -41,14 +41,14 @@ namespace Lab_DB
                     break;
 
                 case 1:
-                    sw.Restart();
+                    /*sw.Restart();
                     {
                         var aTasks = Enumerable.Range(0, clientCount).Select(_ => ExecuteWrapperASync());
                         await Task.WhenAll(aTasks);
                         Console.WriteLine($"-> ExecuteWrapperAsync returned in {sw.Elapsed}");
-                    }
+                    }*/
 
-                    sw.Restart();
+                    /*sw.Restart();
                     {
                         var aTasks = Enumerable.Range(0, clientCount).Select(_ => ExecuteAsync());
                         await Task.WhenAll(aTasks);
@@ -60,7 +60,7 @@ namespace Lab_DB
                                 Console.WriteLine($"{item.Result}");
                         }
                         Console.WriteLine($"-> ExecuteNativeAsync returned in {sw.Elapsed} // Jobs = {count}");
-                    }
+                    }*/
 
                     sw.Restart();
                     {
@@ -69,11 +69,68 @@ namespace Lab_DB
                         Console.WriteLine($"-> ExecuteNativeStoredProcedureAsync returned in {sw.Elapsed}");
                     }
                     break;
+
+                case 2:
+                    sw.Restart();
+                    {
+                        bool flag = false;
+                        Parallel.ForEach(Enumerable.Range(0, clientCount), async (num) => {
+                            flag = await ExecuteSPAsync();
+                            Console.WriteLine($"Job Done = {flag}");
+                        });
+                        Console.WriteLine($"-> Parallel ExecuteSPAsync returned in {sw.Elapsed} // Jobs = {flag}");
+                    }             
+                    break;
+
+                case 3:
+                    sw.Restart();
+                    {
+                        List<Task<bool>> enumList = new List<Task<bool>>();
+                        Parallel.ForEach(Enumerable.Range(0, 8),
+                            async (item) => {
+                                enumList = Enumerable.Range(0, clientCount).Select(_ => ExecuteAsync()).ToList();
+                                await Task.WhenAll(enumList);                          
+                            });
+
+                        int count = 0;
+                        foreach(var item in enumList)
+                        {
+                            ++count;
+                            if (item.IsCompletedSuccessfully)
+                                Console.WriteLine($"{item.Result}");
+                        }
+                        Console.WriteLine($"-> Parallel ExecuteSyncQuery returned in {sw.Elapsed} // Jobs = {count}");
+                    }
+                    break;
+
+                case 4:
+                    // bulk insert Test
+                    sw.Restart();
+                    {
+                        await ExecuteDBBulkInsert();
+                    }
+                    break;
+
                 default:
                     break;
             }
 
             Console.WriteLine("\n\n");
+        }
+
+        private static async Task ExecuteDBBulkInsert()
+        {
+            DataTable dataTable = new DataTable();
+            dataTable.Columns.Add("serial", typeof(int));
+            dataTable.Columns.Add("uid", typeof(string));
+            dataTable.Columns.Add("name", typeof(string)); 
+
+            DataRow dtRows = dataTable.NewRow();
+            dtRows["uid"] = "gusdl576@naver.com";
+            dtRows["name"] = "최규화";
+
+            dataTable.Rows.Add(dtRows); 
+            await SimpleDB.DoBulkInsertTransaction(eDBType.LAB_GAME01, dataTable, "dbo.tbl_user_account");
         }
 
         private static void ExecuteSyncTest(int num, int dbCallTime)
@@ -122,11 +179,21 @@ namespace Lab_DB
             SqlParameter myParam = new SqlParameter("@name", SqlDbType.NVarChar, 10);
             myParam.Value = "sudo9";
 
+            SqlParameter myParamOutput = new SqlParameter(@"outvalue", SqlDbType.Int);
+            //myParamOutput.Value = 1;
+
             var myParams = new List<SqlParameter>(1);
             myParams.Add(myParam);
 
-            var result = await SimpleDB.ExecuteSPReturnAsyncReal(eDBType.LAB_GAME01, "osp_dummy_select", myParams);
-            return result.Item1;
+            var result = await SimpleDB.ExecuteSPReturnAsyncReal(eDBType.LAB_GAME01, "osp_dummy_select", myParams, myParamOutput);
+            if (result.success)
+            {
+                Console.WriteLine($"Result = {result.success}, Output = {result.output}");
+                for(var idx = 0; idx < result.selectTable.Rows.Count; ++idx)
+                    Console.WriteLine($"Data = {result.selectTable.Rows[idx][0]} - {result.selectTable.Rows[idx][1]} - {result.selectTable.Rows[idx][2]}");
+            }
+
+            return result.success;
         }
 
         private static void PerformanceLoop(int count)
@@ -240,7 +307,7 @@ namespace Lab_DB
 
             SimpleDB.Initialize(DBConfigList.Instance.mDBConfigMap);
 
-            var input = 1000;
+            var input = 1;
             var dbCallTime = 1000;
             await DBPerformanceCheck.RunTest(input, dbCallTime);
 
