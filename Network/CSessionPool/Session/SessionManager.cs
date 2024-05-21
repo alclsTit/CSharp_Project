@@ -1,10 +1,6 @@
 ﻿using Common;
-
 namespace CommonNetwork.Session
 {
-    /// <summary>
-    /// 전역 세션관리자
-    /// </summary>
     public class SessionManager 
     {
         #region "Lazy_Init"

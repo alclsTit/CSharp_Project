@@ -1,3 +1,4 @@
+
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Data;
@@ -91,17 +92,15 @@ namespace Common
         }
     }
 
-
-    public class ObjectPool<T> where T: class
+    public class ObjectPool<T> where T : notnull
     {
-        protected ConcurrentStack<T> m_stack = new ConcurrentStack<T>();
+        private ConcurrentStack<T> m_stack = new ConcurrentStack<T>();
         
         private long m_object_count = 0;
-        public readonly long m_create_size = 0;
+        public long m_create_size { get; private set; } = 0;
 
         private Func<T> m_create_func;
-        private Func<T, bool> m_before_return_func;
-
+        private Func<T, bool> m_return_func;
 
         public ObjectPool(long default_size, long create_size, IObjectPoolPolicy<T> policy)
         {
@@ -115,11 +114,11 @@ namespace Common
                 m_stack.Push(m_create_func());   
         }
 
-        private bool AllocObject()
+        public bool AllocObject()
         {
             for (int i = 0; i < m_create_size; ++i)
                 m_stack.Push(m_create_func());
-
+    
             Interlocked.Add(ref m_object_count, m_create_size);
 
             return true;
@@ -172,6 +171,5 @@ namespace Common
             foreach(var item in m_stack)
                 yield return item;
         }
-        
     }
 }

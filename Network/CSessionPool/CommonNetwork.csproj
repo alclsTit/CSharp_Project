@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ExtraLibrary\ObjectPool\Common.csproj" />
+    <ProjectReference Include="..\..\ExtraLibrary\ObjectPool\ObjectPool.csproj" />
   </ItemGroup>
 
 </Project>
