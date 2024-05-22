@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Common;
 
-namespace CommonNetwork.Session
+namespace CommonNetwork
 {
     public class Session : IResettable
     {
@@ -14,6 +14,10 @@ namespace CommonNetwork.Session
 
         public Session() { }
 
+        /// <summary>
+        /// sesson initialize
+        /// </summary>
+        /// <param name="is_connector"></param>
         public void Initialize(bool is_connector)
         {
             m_is_connector = is_connector;
@@ -21,7 +25,7 @@ namespace CommonNetwork.Session
         }
 
         /// <summary>
-        /// Session 멤버변수 초기화 
+        /// session reset
         /// </summary>
         /// <returns></returns>
         public virtual bool Reset()
