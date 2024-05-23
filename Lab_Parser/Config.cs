@@ -36,12 +36,38 @@ namespace Lab_Parser
     }
 
     // 외부 config 로더
-    public static class ConfigLoader<T> where T : new()
+    internal class ConfigLoader<T>
     {
-        public static (bool, T) Load(string filepath, string filename)
+        private bool Find(string file_name, out string result_file_path)
         {
-            Task.Run(() => Console.WriteLine($"bb")).ConfigureAwait(true);
-            Task
+            var root_path = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName);
+            if (string.IsNullOrEmpty(root_path))
+            {
+                result_file_path = "";
+                return false;
+            }
+
+            var data_path = Path.Combine(root_path, "\\", "data");
+            var file_path = Path.Combine(data_path, "\\", file_name);
+
+            if (!File.Exists(file_path)) 
+            {
+                result_file_path = "";
+                return false;
+            }
+
+            result_file_path = file_path;
+            return true;
+        }
+
+        public T LoadJson(string file_name)
+        {
+            if (!Find(file_name, out string result_file_path))
+            {
+                return default(T);
+            }
+
+            var load_target = $"{result_file_path}.json";
         }
     }
 }
